@@ -23,16 +23,15 @@
     <div class="stats-card">
       <div class="d-flex justify-content-between align-items-center">
         <div>
-          <h6 class="text-muted mb-1">Total Devices</h6>
-          <div class="stats-number">142</div>
+          <h6 class="text-muted mb-1">Network Devices</h6>
+          <div class="stats-number">{{ stats.network_devices }}</div>
         </div>
         <div class="text-primary">
-          <i class="fas fa-microchip fa-2x"></i>
+          <i class="fas fa-network-wired fa-2x"></i>
         </div>
       </div>
       <div class="mt-2">
-        <span class="status-indicator status-online"></span> 128 Online
-        <span class="status-indicator status-offline ms-2"></span> 14 Offline
+        <span class="status-indicator status-online"></span> Online
       </div>
     </div>
   </div>
@@ -40,15 +39,31 @@
     <div class="stats-card">
       <div class="d-flex justify-content-between align-items-center">
         <div>
-          <h6 class="text-muted mb-1">Security Alerts</h6>
-          <div class="stats-number text-warning">8</div>
+          <h6 class="text-muted mb-1">Bluetooth Devices</h6>
+          <div class="stats-number text-info">{{ stats.bluetooth_devices }}</div>
         </div>
-        <div class="text-warning">
+        <div class="text-info">
+          <i class="fas fa-bluetooth-b fa-2x"></i>
+        </div>
+      </div>
+      <div class="mt-2">
+        <span class="status-indicator status-online"></span> Online
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stats-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="text-muted mb-1">High Risk Devices</h6>
+          <div class="stats-number text-danger">{{ stats.high_risk_devices }}</div>
+        </div>
+        <div class="text-danger">
           <i class="fas fa-exclamation-triangle fa-2x"></i>
         </div>
       </div>
       <div class="mt-2">
-        <small class="text-muted">3 High, 5 Medium</small>
+        <small class="text-muted">Devices flagged as high risk</small>
       </div>
     </div>
   </div>
@@ -56,31 +71,15 @@
     <div class="stats-card">
       <div class="d-flex justify-content-between align-items-center">
         <div>
-          <h6 class="text-muted mb-1">Data Processed</h6>
-          <div class="stats-number">2.4 TB</div>
+          <h6 class="text-muted mb-1">Open Ports</h6>
+          <div class="stats-number text-warning">{{ stats.open_ports }}</div>
         </div>
-        <div class="text-info">
-          <i class="fas fa-database fa-2x"></i>
-        </div>
-      </div>
-      <div class="mt-2">
-        <small class="text-muted">+12% from last week</small>
-      </div>
-    </div>
-  </div>
-  <div class="col-md-3">
-    <div class="stats-card">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <h6 class="text-muted mb-1">Framework Compliance</h6>
-          <div class="stats-number text-success">92%</div>
-        </div>
-        <div class="text-success">
-          <i class="fas fa-check-circle fa-2x"></i>
+        <div class="text-warning">
+          <i class="fas fa-door-open fa-2x"></i>
         </div>
       </div>
       <div class="mt-2">
-        <small class="text-muted">NIST CSF v1.1</small>
+        <small class="text-muted">Total open ports detected</small>
       </div>
     </div>
   </div>
@@ -251,54 +250,35 @@
   </div>
 </div>
 
-<!-- Recent Activity -->
+<!-- Recent Devices Table -->
 <div class="row mt-4">
   <div class="col-12">
     <div class="card">
       <div class="card-header bg-white">
-        <h5 class="card-title mb-0">Recent Security Events</h5>
+        <h5 class="card-title mb-0">Recent Devices (from latest CSV)</h5>
       </div>
       <div class="card-body">
         <div class="table-responsive">
           <table class="table table-hover">
             <thead>
               <tr>
-                <th>Time</th>
-                <th>Device</th>
-                <th>Event Type</th>
-                <th>Severity</th>
-                <th>Status</th>
+                {% if recent_devices and recent_devices|length > 0 %}
+                  {% for col in recent_devices[0].keys() %}
+                    <th>{{ col|replace('_', ' ')|title }}</th>
+                  {% endfor %}
+                {% else %}
+                  <th>No data available</th>
+                {% endif %}
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>10:23 AM</td>
-                <td>Sensor-42</td>
-                <td>Unauthorized Access</td>
-                <td><span class="badge bg-danger">High</span></td>
-                <td><span class="badge bg-warning">Investigating</span></td>
-              </tr>
-              <tr>
-                <td>09:45 AM</td>
-                <td>Gateway-7</td>
-                <td>Data Anomaly</td>
-                <td><span class="badge bg-warning">Medium</span></td>
-                <td><span class="badge bg-success">Resolved</span></td>
-              </tr>
-              <tr>
-                <td>08:12 AM</td>
-                <td>Device-153</td>
-                <td>Protocol Violation</td>
-                <td><span class="badge bg-warning">Medium</span></td>
-                <td><span class="badge bg-success">Resolved</span></td>
-              </tr>
-              <tr>
-                <td>07:30 AM</td>
-                <td>Hub-3</td>
-                <td>Firmware Update</td>
-                <td><span class="badge bg-info">Low</span></td>
-                <td><span class="badge bg-success">Completed</span></td>
-              </tr>
+              {% for device in recent_devices %}
+                <tr>
+                  {% for value in device.values() %}
+                    <td>{{ value }}</td>
+                  {% endfor %}
+                </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>

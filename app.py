@@ -632,20 +632,57 @@ def monitoring_status():
 def index():
     """Home page with dashboard"""
     try:
-        # Get dashboard statistics
-        stats = get_dashboard_stats()
-        
-        # Get recent devices for dashboard
-        recent_devices = get_combined_devices()
-        
+        # Try to load the latest CSV from uploads/
+        uploaded_file = get_latest_upload()
+        stats = {'network_devices': 0, 'bluetooth_devices': 0, 'high_risk_devices': 0, 'open_ports': 0}
+        recent_devices = []
+        csv_data = None
+        if uploaded_file and uploaded_file.endswith('.csv'):
+            try:
+                df = pd.read_csv(uploaded_file)
+                csv_data = df.to_dict(orient='records')
+                # Dynamically calculate dashboard stats based on available fields
+                # Network Devices: count rows where Machine_Type or device_type contains 'network', 'router', 'gateway', etc.
+                if 'Machine_Type' in df.columns:
+                    stats['network_devices'] = df['Machine_Type'].str.contains('network|router|gateway|switch|CNC|Vision|Chiller|Controller|Screwdriver|Labeler|System|Belt|Robot|Sensor', case=False, na=False).sum()
+                elif 'device_type' in df.columns:
+                    stats['network_devices'] = df['device_type'].str.contains('network|router|gateway|switch', case=False, na=False).sum()
+                # Bluetooth Devices: count rows where Machine_Type or device_type contains 'bluetooth' or 'BLE'
+                if 'Machine_Type' in df.columns:
+                    stats['bluetooth_devices'] = df['Machine_Type'].str.contains('bluetooth|ble', case=False, na=False).sum()
+                elif 'device_type' in df.columns:
+                    stats['bluetooth_devices'] = df['device_type'].str.contains('bluetooth|ble', case=False, na=False).sum()
+                # High Risk Devices: count rows where Failure_Within_7_Days is True or risk_level is 'high'
+                if 'Failure_Within_7_Days' in df.columns:
+                    stats['high_risk_devices'] = df['Failure_Within_7_Days'].astype(str).str.lower().eq('true').sum()
+                elif 'risk_level' in df.columns:
+                    stats['high_risk_devices'] = df['risk_level'].astype(str).str.lower().eq('high').sum()
+                # Open Ports: sum open_ports column if present, else 0
+                if 'open_ports' in df.columns:
+                    try:
+                        stats['open_ports'] = df['open_ports'].astype(float).sum()
+                    except Exception:
+                        stats['open_ports'] = 0
+                else:
+                    stats['open_ports'] = 0
+                # Show up to 10 recent devices
+                recent_devices = csv_data[:10]
+            except Exception as e:
+                print(f"CSV parse error: {e}")
+        else:
+            # Fallback to existing logic if no CSV
+            stats = get_dashboard_stats()
+            recent_devices = get_combined_devices()
         return render_template('index.html', 
                              stats=stats,
-                             recent_devices=recent_devices)
+                             recent_devices=recent_devices,
+                             csv_data=csv_data)
     except Exception as e:
         print(f"Dashboard error: {e}")
         return render_template('index.html', 
                              stats={'network_devices': 0, 'bluetooth_devices': 0, 'high_risk_devices': 0, 'open_ports': 0},
-                             recent_devices=[])
+                             recent_devices=[],
+                             csv_data=None)
 
 @app.route('/identify', methods=['GET', 'POST'])
 def identify():
@@ -841,35 +878,55 @@ def identify():
         # Get devices from database and asset inventory
         network_results = get_network_devices_from_db()
         bluetooth_results = get_bluetooth_devices_from_db()
-        
+
+        # --- Add devices from latest CSV ---
+        uploaded_file = get_latest_upload()
+        csv_network = []
+        csv_bluetooth = []
+        if uploaded_file and uploaded_file.endswith('.csv'):
+            import pandas as pd
+            try:
+                df = pd.read_csv(uploaded_file)
+                if 'Machine_Type' in df.columns:
+                    csv_network = df[df['Machine_Type'].str.contains('network|router|gateway|switch|CNC|Vision|Chiller|Controller|Screwdriver|Labeler|System|Belt|Robot|Sensor', case=False, na=False)].to_dict(orient='records')
+                    csv_bluetooth = df[df['Machine_Type'].str.contains('bluetooth|ble', case=False, na=False)].to_dict(orient='records')
+                elif 'device_type' in df.columns:
+                    csv_network = df[df['device_type'].str.contains('network|router|gateway|switch', case=False, na=False)].to_dict(orient='records')
+                    csv_bluetooth = df[df['device_type'].str.contains('bluetooth|ble', case=False, na=False)].to_dict(orient='records')
+            except Exception as e:
+                print(f"CSV parse error (identify): {e}")
+        # Merge CSV devices with scan results
+        network_results.extend(csv_network)
+        bluetooth_results.extend(csv_bluetooth)
+        # --- End CSV merge ---
+
         # Get asset inventory devices
         if asset_inventory:
             try:
                 asset_devices = asset_inventory.get_all_devices()
-                # Merge with network results
                 network_results.extend(asset_devices)
             except Exception as e:
                 print(f"Error getting asset inventory devices: {e}")
-        
+
         # Get asset inventory statistics
         asset_stats = get_asset_statistics()
-        
+
         # Combine results for unified display
         try:
             combined_results = data_analyzer.combine_datasets(network_results, bluetooth_results)
         except Exception as e:
             print(f"Combining datasets error: {e}")
             combined_results = []
-        
+
         # Get current scan progress
         scan_progress = network_scanner.get_scan_progress()
-        
+
         # Get local network ranges for dropdown
         local_networks = network_scanner.get_local_network_ranges()
-        
+
         # Get dashboard stats for the template
         stats = get_dashboard_stats()
-        
+
         return render_template('identify.html', 
                              scan_progress=scan_progress,
                              local_networks=local_networks,
@@ -1287,7 +1344,42 @@ def protect():
         protection_analysis = None
         device_mapping = None
         ansible_systems = get_ansible_supported_systems()
-        
+        # --- Dynamic CSV stats logic ---
+        stats = {'network_devices': 0, 'bluetooth_devices': 0, 'high_risk_devices': 0, 'open_ports': 0}
+        recent_devices = []
+        csv_data = None
+        uploaded_file = get_latest_upload()
+        if uploaded_file and uploaded_file.endswith('.csv'):
+            try:
+                df = pd.read_csv(uploaded_file)
+                csv_data = df.to_dict(orient='records')
+                # Network Devices
+                if 'Machine_Type' in df.columns:
+                    stats['network_devices'] = df['Machine_Type'].str.contains('network|router|gateway|switch|CNC|Vision|Chiller|Controller|Screwdriver|Labeler|System|Belt|Robot|Sensor', case=False, na=False).sum()
+                elif 'device_type' in df.columns:
+                    stats['network_devices'] = df['device_type'].str.contains('network|router|gateway|switch', case=False, na=False).sum()
+                # Bluetooth Devices
+                if 'Machine_Type' in df.columns:
+                    stats['bluetooth_devices'] = df['Machine_Type'].str.contains('bluetooth|ble', case=False, na=False).sum()
+                elif 'device_type' in df.columns:
+                    stats['bluetooth_devices'] = df['device_type'].str.contains('bluetooth|ble', case=False, na=False).sum()
+                # High Risk Devices
+                if 'Failure_Within_7_Days' in df.columns:
+                    stats['high_risk_devices'] = df['Failure_Within_7_Days'].astype(str).str.lower().eq('true').sum()
+                elif 'risk_level' in df.columns:
+                    stats['high_risk_devices'] = df['risk_level'].astype(str).str.lower().eq('high').sum()
+                # Open Ports
+                if 'open_ports' in df.columns:
+                    try:
+                        stats['open_ports'] = df['open_ports'].astype(float).sum()
+                    except Exception:
+                        stats['open_ports'] = 0
+                else:
+                    stats['open_ports'] = 0
+                recent_devices = csv_data[:10]
+            except Exception as e:
+                print(f"CSV parse error: {e}")
+        # --- End dynamic CSV stats logic ---
         if request.method == 'POST':
             if 'analyze_protection' in request.form:
                 uploaded_file = get_latest_upload()
@@ -1300,39 +1392,33 @@ def protect():
                         flash(f'❌ Protection analysis failed: {str(e)}', 'error')
                 else:
                     flash('❌ Please upload a dataset first', 'error')
-            
             elif 'generate_ansible' in request.form:
                 system_type = request.form.get('system_type')
                 config_type = request.form.get('config_type', 'security_hardening')
-                
                 try:
                     ansible_config = generate_ansible_config(system_type, config_type)
-                    
-                    # Return as downloadable file
                     from flask import send_file
                     import io
-                    
                     file_obj = io.BytesIO(ansible_config.encode())
                     filename = f"ansible_{system_type}_{config_type}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.yml"
-                    
                     return send_file(
                         file_obj,
                         as_attachment=True,
                         download_name=filename,
                         mimetype='text/yaml'
                     )
-                    
                 except Exception as e:
                     flash(f'❌ Ansible config generation failed: {str(e)}', 'error')
-        
         return render_template('protect.html', 
                              protection_analysis=protection_analysis,
                              device_mapping=device_mapping,
-                             ansible_systems=ansible_systems)
-                             
+                             ansible_systems=ansible_systems,
+                             stats=stats,
+                             recent_devices=recent_devices,
+                             csv_data=csv_data)
     except Exception as e:
         flash(f'❌ System error: {str(e)}', 'error')
-        return render_template('protect.html', ansible_systems=get_ansible_supported_systems())
+        return render_template('protect.html', ansible_systems=get_ansible_supported_systems(), stats={'network_devices': 0, 'bluetooth_devices': 0, 'high_risk_devices': 0, 'open_ports': 0}, recent_devices=[], csv_data=None)
 
 @app.route('/api/recovery/scan', methods=['POST'])
 def recovery_scan():
@@ -2502,26 +2588,27 @@ def get_latest_upload():
     """Get the most recently uploaded dataset file"""
     try:
         upload_dir = app.config['UPLOAD_FOLDER']
-        
-        # Create uploads directory if it doesn't exist
+        # Prefer the synthetic CSV for demo if it exists
+        synthetic_csv = None
+        for f in os.listdir(upload_dir):
+            if f.startswith('synthetic_iot_devices_') and f.endswith('.csv'):
+                synthetic_csv = os.path.join(upload_dir, f)
+                break
+        if synthetic_csv and os.path.exists(synthetic_csv):
+            return synthetic_csv
+        # Fallback to most recent file
         if not os.path.exists(upload_dir):
             os.makedirs(upload_dir)
             return None
-            
         files = os.listdir(upload_dir)
         allowed_files = [f for f in files if allowed_file(f)]
-        
         if not allowed_files:
             return None
-            
-        # Get the most recent file
         latest_file = max(
             allowed_files, 
             key=lambda x: os.path.getctime(os.path.join(upload_dir, x))
         )
-        
         return os.path.join(upload_dir, latest_file)
-        
     except Exception as e:
         print(f"Error getting latest upload: {e}")
         return None

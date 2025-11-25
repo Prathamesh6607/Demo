@@ -89,6 +89,83 @@
     </style>
   </head>
   <body>
+    <!-- Navigation: IoT NIST Monitor Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+          <i class="fas fa-shield-alt me-2"></i> IoT NIST Monitor
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a
+                class="nav-link{% if request.endpoint == 'index' %} active{% endif %}"
+                href="{{ url_for('index') }}"
+                >Dashboard</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link{% if request.endpoint == 'identify' %} active{% endif %}"
+                href="{{ url_for('identify') }}"
+                >Identify</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link{% if request.endpoint == 'protect' %} active{% endif %}"
+                href="{{ url_for('protect') }}"
+                >Protect</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link{% if request.endpoint == 'detect' %} active{% endif %}"
+                href="{{ url_for('detect') }}"
+                >Detect</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link{% if request.endpoint == 'respond' %} active{% endif %}"
+                href="{{ url_for('respond') }}"
+                >Respond</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link{% if request.endpoint == 'recover' %} active{% endif %}"
+                href="{{ url_for('recover') }}"
+                >Recover</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link{% if request.endpoint == 'devicehive' %} active{% endif %}"
+                href="{{ url_for('devicehive') }}"
+                >DeviceHive</a
+              >
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link{% if request.endpoint == 'report' %} active{% endif %}"
+                href="{{ url_for('report') }}"
+                >Report</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
     <div class="container-fluid py-4">
       <!-- Header -->
       <div class="row mb-4">
