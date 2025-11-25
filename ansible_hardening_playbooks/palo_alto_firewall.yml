@@ -1,0 +1,51 @@
+---
+- name: "Configure Palo Alto Firewall policies"
+  hosts: paloalto_firewalls
+  connection: local
+  gather_facts: false
+  collections:
+    - paloaltonetworks.panos
+  vars:
+    provider:
+      ip_address: "{{ inventory_hostname }}"
+      username: "{{ ansible_user }}"
+      password: "{{ ansible_password }}"
+      api_key: "{{ palo_api_key | default(omit) }}"
+  tasks:
+    - name: Add security rule to deny all but SSH/HTTP (example)
+      paloaltonetworks.panos.panos_security_rule:
+        provider: "{{ provider }}"
+        rule_name: 'Block-All-Except-SSH-HTTP'
+        description: 'Default deny rule (only SSH/HTTP allowed above)'
+        source_zone: ['untrust']
+        destination_zone: ['trust']
+        source_ip: ['any']
+        destination_ip: ['any']
+        application: ['any']
+        service: ['application-default']
+        action: deny
+        commit: yes
+    - name: Allow HTTP inbound from Internet (example rule)
+      paloaltonetworks.panos.panos_security_rule:
+        provider: "{{ provider }}"
+        rule_name: 'Allow-HTTP-Inbound'
+        source_zone: ['untrust']
+        destination_zone: ['dmz']
+        source_ip: ['any']
+        destination_ip: ['10.0.0.100']
+        application: ['web-browsing']
+        action: allow
+        commit: yes
+    - name: Configure a simple DNAT rule for SSH
+      paloaltonetworks.panos.panos_nat_rule:
+        provider: "{{ provider }}"
+        rule_name: 'DNAT-SSH'
+        description: 'Map public IP to internal SSH server'
+        source_zone: ['untrust']
+        destination_zone: 'untrust'
+        destination_ip: ['203.0.113.10']
+        service: 'service-ssh'
+        snat_type: none
+        dnat_address: '10.0.0.50'
+        dnat_port: '22'
+        commit: yes

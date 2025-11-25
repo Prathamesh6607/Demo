@@ -1,0 +1,24 @@
+---
+- name: "Harden Windows Servers"
+  hosts: windows_servers
+  gather_facts: yes
+  vars:
+    win_temp_path: 'C:\\Windows\\Temp'
+  tasks:
+    - name: Install all critical and security updates
+      ansible.windows.win_updates:
+        category_names: ['CriticalUpdates','SecurityUpdates']
+        reboot: yes
+    - name: Disable SMBv1 (legacy and insecure)
+      ansible.windows.win_feature:
+        name: FS-SMB1
+        state: absent
+      ignore_errors: yes
+    - name: Disable Telnet service (if present)
+      ansible.windows.win_service:
+        name: Telnet
+        start_mode: Disabled
+        state: stopped
+      ignore_errors: yes
+  roles:
+    - name: dev-sec.windows-hardening

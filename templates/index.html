@@ -1,0 +1,309 @@
+{% extends "base.html" %} {% block content %}
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+  <div class="row align-items-center">
+    <div class="col-md-8">
+      <h1 class="display-5 fw-bold">IoT NIST Framework Monitor</h1>
+      <p class="lead mb-0">
+        Comprehensive IoT security monitoring aligned with NIST Cybersecurity
+        Framework
+      </p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{{ url_for('devicehive') }}" class="btn btn-outline-light">
+        <i class="fas fa-terminal me-2"></i>MQTT Logs
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Stats Overview -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="stats-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="text-muted mb-1">Total Devices</h6>
+          <div class="stats-number">142</div>
+        </div>
+        <div class="text-primary">
+          <i class="fas fa-microchip fa-2x"></i>
+        </div>
+      </div>
+      <div class="mt-2">
+        <span class="status-indicator status-online"></span> 128 Online
+        <span class="status-indicator status-offline ms-2"></span> 14 Offline
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stats-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="text-muted mb-1">Security Alerts</h6>
+          <div class="stats-number text-warning">8</div>
+        </div>
+        <div class="text-warning">
+          <i class="fas fa-exclamation-triangle fa-2x"></i>
+        </div>
+      </div>
+      <div class="mt-2">
+        <small class="text-muted">3 High, 5 Medium</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stats-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="text-muted mb-1">Data Processed</h6>
+          <div class="stats-number">2.4 TB</div>
+        </div>
+        <div class="text-info">
+          <i class="fas fa-database fa-2x"></i>
+        </div>
+      </div>
+      <div class="mt-2">
+        <small class="text-muted">+12% from last week</small>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stats-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h6 class="text-muted mb-1">Framework Compliance</h6>
+          <div class="stats-number text-success">92%</div>
+        </div>
+        <div class="text-success">
+          <i class="fas fa-check-circle fa-2x"></i>
+        </div>
+      </div>
+      <div class="mt-2">
+        <small class="text-muted">NIST CSF v1.1</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NIST Framework Cards -->
+<div class="framework-section">
+  <h3 class="section-title">NIST Cybersecurity Framework</h3>
+  <div class="row">
+    <div class="col-md-4 mb-4">
+      <a href="{{ url_for('identify') }}" class="card-link">
+        <div class="card framework-card border-start border-primary border-4">
+          <div class="card-body">
+            <div class="card-icon text-primary">
+              <i class="fas fa-fingerprint"></i>
+            </div>
+            <h5 class="card-title">Identify</h5>
+            <p class="card-text">
+              Asset Management, Business Environment, Governance
+            </p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <div class="progress flex-grow-1 me-2 progress-thin">
+                <div
+                  class="progress-bar bg-primary"
+                  role="progressbar"
+                  style="width: 85%"
+                ></div>
+              </div>
+              <span class="text-muted small">85%</span>
+            </div>
+            <div class="btn btn-outline-primary btn-sm mt-3">View Details</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4 mb-4">
+      <a href="{{ url_for('protect') }}" class="card-link">
+        <div class="card framework-card border-start border-success border-4">
+          <div class="card-body">
+            <div class="card-icon text-success">
+              <i class="fas fa-lock"></i>
+            </div>
+            <h5 class="card-title">Protect</h5>
+            <p class="card-text">
+              Access Control, Awareness Training, Data Security
+            </p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <div class="progress flex-grow-1 me-2 progress-thin">
+                <div
+                  class="progress-bar bg-success"
+                  role="progressbar"
+                  style="width: 78%"
+                ></div>
+              </div>
+              <span class="text-muted small">78%</span>
+            </div>
+            <div class="btn btn-outline-success btn-sm mt-3">View Details</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4 mb-4">
+      <a href="{{ url_for('detect') }}" class="card-link">
+        <div class="card framework-card border-start border-warning border-4">
+          <div class="card-body">
+            <div class="card-icon text-warning">
+              <i class="fas fa-search"></i>
+            </div>
+            <h5 class="card-title">Detect</h5>
+            <p class="card-text">
+              Anomalies and Events, Security Continuous Monitoring
+            </p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <div class="progress flex-grow-1 me-2 progress-thin">
+                <div
+                  class="progress-bar bg-warning"
+                  role="progressbar"
+                  style="width: 65%"
+                ></div>
+              </div>
+              <span class="text-muted small">65%</span>
+            </div>
+            <div class="btn btn-outline-warning btn-sm mt-3">View Details</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4 mb-4">
+      <a href="{{ url_for('respond') }}" class="card-link">
+        <div class="card framework-card border-start border-danger border-4">
+          <div class="card-body">
+            <div class="card-icon text-danger">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h5 class="card-title">Respond</h5>
+            <p class="card-text">
+              Response Planning, Communications, Analysis, Mitigation
+            </p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <div class="progress flex-grow-1 me-2 progress-thin">
+                <div
+                  class="progress-bar bg-danger"
+                  role="progressbar"
+                  style="width: 72%"
+                ></div>
+              </div>
+              <span class="text-muted small">72%</span>
+            </div>
+            <div class="btn btn-outline-danger btn-sm mt-3">View Details</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4 mb-4">
+      <a href="{{ url_for('recover') }}" class="card-link">
+        <div class="card framework-card border-start border-info border-4">
+          <div class="card-body">
+            <div class="card-icon text-info">
+              <i class="fas fa-redo"></i>
+            </div>
+            <h5 class="card-title">Recover</h5>
+            <p class="card-text">
+              Recovery Planning, Improvements, Communications
+            </p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <div class="progress flex-grow-1 me-2 progress-thin">
+                <div
+                  class="progress-bar bg-info"
+                  role="progressbar"
+                  style="width: 80%"
+                ></div>
+              </div>
+              <span class="text-muted small">80%</span>
+            </div>
+            <div class="btn btn-outline-info btn-sm mt-3">View Details</div>
+          </div>
+        </div>
+      </a>
+    </div>
+    <div class="col-md-4 mb-4">
+      <a href="{{ url_for('report') }}" class="card-link">
+        <div class="card framework-card border-start border-secondary border-4">
+          <div class="card-body">
+            <div class="card-icon text-secondary">
+              <i class="fas fa-chart-bar"></i>
+            </div>
+            <h5 class="card-title">Report</h5>
+            <p class="card-text">
+              Comprehensive Analysis, Compliance Reporting, Trends
+            </p>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <div class="progress flex-grow-1 me-2 progress-thin">
+                <div
+                  class="progress-bar bg-secondary"
+                  role="progressbar"
+                  style="width: 90%"
+                ></div>
+              </div>
+              <span class="text-muted small">90%</span>
+            </div>
+            <div class="btn btn-outline-secondary btn-sm mt-3">
+              View Details
+            </div>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-white">
+        <h5 class="card-title mb-0">Recent Security Events</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Device</th>
+                <th>Event Type</th>
+                <th>Severity</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>10:23 AM</td>
+                <td>Sensor-42</td>
+                <td>Unauthorized Access</td>
+                <td><span class="badge bg-danger">High</span></td>
+                <td><span class="badge bg-warning">Investigating</span></td>
+              </tr>
+              <tr>
+                <td>09:45 AM</td>
+                <td>Gateway-7</td>
+                <td>Data Anomaly</td>
+                <td><span class="badge bg-warning">Medium</span></td>
+                <td><span class="badge bg-success">Resolved</span></td>
+              </tr>
+              <tr>
+                <td>08:12 AM</td>
+                <td>Device-153</td>
+                <td>Protocol Violation</td>
+                <td><span class="badge bg-warning">Medium</span></td>
+                <td><span class="badge bg-success">Resolved</span></td>
+              </tr>
+              <tr>
+                <td>07:30 AM</td>
+                <td>Hub-3</td>
+                <td>Firmware Update</td>
+                <td><span class="badge bg-info">Low</span></td>
+                <td><span class="badge bg-success">Completed</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

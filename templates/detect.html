@@ -1,0 +1,229 @@
+{% extends "base.html" %} {% block content %}
+<div class="row">
+  <div class="col-12">
+    <h2><i class="fas fa-search"></i> NIST Phase 3: DETECT</h2>
+    <p class="lead">Vulnerability Scanning and Anomaly Detection</p>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header bg-danger text-white">
+        <h5><i class="fas fa-bug"></i> Vulnerability Scanning</h5>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Device Type:</label>
+            <select name="device_type" class="form-select">
+              <option value="Camera">Camera</option>
+              <option value="Router">Router</option>
+              <option value="Printer">Printer</option>
+              <option value="IoT Sensor">IoT Sensor</option>
+              <option value="Smart TV">Smart TV</option>
+              <option value="Industrial">Industrial IoT</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Vendor:</label>
+            <input
+              type="text"
+              name="vendor"
+              class="form-control"
+              placeholder="e.g., Hikvision, Cisco"
+            />
+          </div>
+          <button
+            type="submit"
+            name="scan_vulnerabilities"
+            class="btn btn-danger"
+          >
+            <i class="fas fa-search"></i> Scan for Vulnerabilities
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header bg-warning">
+        <h5><i class="fas fa-chart-line"></i> Anomaly Detection</h5>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <button type="submit" name="detect_anomalies" class="btn btn-warning">
+            <i class="fas fa-radar"></i> Detect Anomalies
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="card-header bg-info text-white">
+        <h5><i class="fas fa-google"></i> Google Dorking</h5>
+      </div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Search Terms:</label>
+            <input
+              type="text"
+              name="dork_terms"
+              class="form-control"
+              placeholder="e.g., Hikvision camera vulnerability"
+            />
+          </div>
+          <button type="submit" name="google_dorking" class="btn btn-info">
+            <i class="fas fa-search"></i> Google Dork Search
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if cve_results %}
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-danger text-white">
+        <h5><i class="fas fa-shield-virus"></i> CVE Vulnerability Report</h5>
+      </div>
+      <div class="card-body">
+        {% for cve_id, details in cve_results.items() %}
+        <div
+          class="card mb-3 border-{{ 'danger' if details.severity == 'High' else 'warning' if details.severity == 'Medium' else 'info' }}"
+        >
+          <div class="card-header">
+            <strong>{{ cve_id }}</strong>
+            <span
+              class="badge bg-{{ 'danger' if details.severity == 'High' else 'warning' if details.severity == 'Medium' else 'info' }} float-end"
+            >
+              CVSS: {{ details.cvss }} | {{ details.severity }}
+            </span>
+          </div>
+          <div class="card-body">
+            <p>{{ details.description }}</p>
+            <div class="row">
+              <div class="col-md-6">
+                <strong>Affected Devices:</strong>
+                <ul>
+                  {% for device in details.affected_devices %}
+                  <li>{{ device }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+              <div class="col-md-6">
+                <strong>Remediation:</strong>
+                <p>{{ details.remediation }}</p>
+              </div>
+            </div>
+            {% if details.exploit_available %}
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-triangle"></i>
+              <strong>Exploit Available:</strong> {{ details.exploit_details }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %} {% if detection_results %}
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-warning">
+        <h5>
+          <i class="fas fa-exclamation-triangle"></i> Anomaly Detection Report
+        </h5>
+      </div>
+      <div class="card-body">
+        <div
+          class="alert alert-{{ 'danger' if detection_results.total_anomalies > 5 else 'warning' if detection_results.total_anomalies > 2 else 'info' }}"
+        >
+          <h6>Detection Summary</h6>
+          <p>
+            Found {{ detection_results.total_anomalies }} anomalous devices out
+            of {{ detection_results.total_devices }} total devices
+          </p>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Device ID</th>
+                <th>Device Type</th>
+                <th>Anomaly Score</th>
+                <th>Risk Level</th>
+                <th>Suspicious Metrics</th>
+                <th>Recommendation</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for device in detection_results.anomalous_devices %}
+              <tr>
+                <td>{{ device.device_id }}</td>
+                <td>{{ device.device_type }}</td>
+                <td>
+                  <span
+                    class="badge bg-{{ 'danger' if device.anomaly_score > 7 else 'warning' if device.anomaly_score > 4 else 'info' }}"
+                  >
+                    {{ device.anomaly_score }}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    class="badge bg-{{ 'danger' if device.risk_level == 'High' else 'warning' if device.risk_level == 'Medium' else 'info' }}"
+                  >
+                    {{ device.risk_level }}
+                  </span>
+                </td>
+                <td>
+                  {% for metric in device.suspicious_metrics %}
+                  <span class="badge bg-light text-dark">{{ metric }}</span>
+                  {% endfor %}
+                </td>
+                <td>{{ device.recommendation }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %} {% if dorking_results %}
+<div class="row mt-4">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header bg-info text-white">
+        <h5><i class="fas fa-google"></i> Google Dorking Results</h5>
+      </div>
+      <div class="card-body">
+        <div class="list-group">
+          {% for result in dorking_results %}
+          <a href="#" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">{{ result.title }}</h6>
+              <small
+                class="text-{{ 'danger' if result.risk == 'High' else 'warning' }}"
+                >{{ result.risk }}</small
+              >
+            </div>
+            <p class="mb-1">{{ result.description }}</p>
+            <small>{{ result.url }}</small>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %} {% endblock %}

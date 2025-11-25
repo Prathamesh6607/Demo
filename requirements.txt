@@ -1,0 +1,13 @@
+Flask
+pandas
+numpy
+scikit-learn
+requests
+bleak
+python-nmap
+netifaces
+flask-cors
+awsiotsdk>=1.26.0
+requests>=2.25.1
+boto3>=1.26.0
+asyncio

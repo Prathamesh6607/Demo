@@ -1,0 +1,30 @@
+---
+- name: "Harden Ubuntu servers"
+  hosts: ubuntu_servers
+  become: true
+  vars:
+    unattended_upgrades: true
+  collections:
+    - devsec.hardening
+  tasks:
+    - name: Update APT cache and upgrade packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+    - name: Install Unattended Upgrades for security updates
+      apt:
+        name: unattended-upgrades
+        state: present
+    - name: Enable unattended upgrades
+      ansible.builtin.lineinfile:
+        path: /etc/apt/apt.conf.d/20auto-upgrades
+        regexp: '^APT::Periodic::Update-Package-Lists'
+        line: 'APT::Periodic::Update-Package-Lists "1";'
+    - name: Enable unattended upgrade configuration
+      ansible.builtin.lineinfile:
+        path: /etc/apt/apt.conf.d/20auto-upgrades
+        regexp: '^APT::Periodic::Unattended-Upgrade'
+        line: 'APT::Periodic::Unattended-Upgrade "1";'
+  roles:
+    - os_hardening
+    - ssh_hardening

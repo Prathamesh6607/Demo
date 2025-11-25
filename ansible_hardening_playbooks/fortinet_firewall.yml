@@ -1,0 +1,35 @@
+---
+- name: "Configure FortiGate Firewall policies"
+  hosts: fortigates
+  connection: httpapi
+  collections:
+    - fortinet.fortios
+  vars:
+    vdom: "root"
+    ansible_httpapi_validate_certs: false
+    ansible_httpapi_use_ssl: true
+  tasks:
+    - name: Define internal web server address object
+      fortinet.fortios.fortios_firewall_address:
+        vdom: "{{ vdom }}"
+        state: present
+        firewall_address:
+          name: 'Web-Server'
+          type: 'ipmask'
+          subnet: '10.0.0.100/32'
+    - name: Create IPv4 policy: Allow HTTP and NAT to Web-Server
+      fortinet.fortios.fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: present
+        firewall_policy:
+          name: 'Allow-HTTP-Inbound'
+          srcintf: 'port1'
+          dstintf: 'port2'
+          srcaddr: ['all']
+          dstaddr: ['Web-Server']
+          action: 'accept'
+          schedule: 'always'
+          service: ['HTTP']
+          logtraffic: 'all'
+          nat: 'enable'
+          natip: '203.0.113.10'

@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ansible Security Hardening Playbooks</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+        }
+
+        .jumbotron {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 0 0 20px 20px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            transition: transform 0.2s;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: 600;
+            border-bottom: none;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .risk-high {
+            background-color: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+
+        .risk-medium {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+
+        .risk-low {
+            background-color: #d1ecf1;
+            border-left: 4px solid #0dcaf0;
+        }
+
+        .alert-item {
+            border-left: 4px solid #dc3545;
+            padding-left: 15px;
+            margin-bottom: 1rem;
+        }
+
+        .file-icon {
+            font-size: 1.2rem;
+            margin-right: 8px;
+            color: #495057;
+        }
+
+        .platform-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        .file-path {
+            background-color: #f1f3f4;
+            border-radius: 4px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        .code-block {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+
+        .feature-list li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .pros-cons {
+            margin-top: 20px;
+        }
+
+        .pros {
+            border-left: 4px solid #27ae60;
+            padding-left: 15px;
+        }
+
+        .cons {
+            border-left: 4px solid #e74c3c;
+            padding-left: 15px;
+        }
+
+        .nav-link {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .nav-link.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            border-radius: 50%;
+            margin-right: 10px;
+            line-height: 30px;
+        }
+
+        .theory-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-shield-alt me-2"></i>Ansible Hardening Portal
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#ansible-theory">Ansible Guide</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#playbooks">Playbooks</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#documentation">Documentation</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Jumbotron -->
+    <div class="jumbotron" id="home">
+        <div class="container text-center">
+            <h1 class="display-4">Security Hardening Playbooks</h1>
+            <p class="lead">Production-ready Ansible configurations to secure your infrastructure across multiple platforms</p>
+            <a href="#playbooks" class="btn btn-light btn-lg mt-3 me-2">
+                <i class="fas fa-download me-2"></i>Download Playbooks
+            </a>
+            <a href="#ansible-theory" class="btn btn-outline-light btn-lg mt-3">
+                <i class="fas fa-book me-2"></i>Learn Ansible
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Security Alerts Section -->
+        <div class="row mb-4">
+            <div class="col-md-8 mx-auto">
+                <h3 class="section-title">Security Alerts</h3>
+                
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
+                    <div>
+                        <h5 class="alert-heading">Critical Security Update Required</h5>
+                        <p class="mb-0">Apply the latest hardening playbooks to address newly discovered vulnerabilities.</p>
+                    </div>
+                </div>
+                
+                <div class="alert-item p-3 mb-3 bg-white rounded shadow-sm">
+                    <h5><i class="fas fa-bug me-2"></i>Log4j Vulnerability Detection</h5>
+                    <p class="mb-1">Affected systems: Linux servers, Windows servers</p>
+                    <small class="text-muted">Last detected: 2 hours ago</small>
+                </div>
+                
+                <div class="alert-item p-3 mb-3 bg-white rounded shadow-sm">
+                    <h5><i class="fas fa-shield-alt me-2"></i>Firewall Policy Violation</h5>
+                    <p class="mb-1">Unauthorized access attempt detected on Palo Alto firewall</p>
+                    <small class="text-muted">Last detected: 5 hours ago</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Assessment Section -->
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h3 class="section-title">Risk Assessment</h3>
+                
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card risk-high">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-exclamation-circle me-2"></i>High Risk</h5>
+                                <p class="card-text">Systems without recent security updates or proper firewall configuration.</p>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 85%"></div>
+                                </div>
+                                <small>12 systems affected</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card risk-medium">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-exclamation-triangle me-2"></i>Medium Risk</h5>
+                                <p class="card-text">Systems with partial security configurations or outdated policies.</p>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 45%"></div>
+                                </div>
+                                <small>24 systems affected</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card risk-low">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="fas fa-check-circle me-2"></i>Low Risk</h5>
+                                <p class="card-text">Systems with current security configurations and regular updates.</p>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 15%"></div>
+                                </div>
+                                <small>8 systems affected</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ansible Theory & Setup Section -->
+        <div class="row mb-5" id="ansible-theory">
+            <div class="col-md-12">
+                <h3 class="section-title">Ansible Guide: Theory, Setup & Best Practices</h3>
+            </div>
+            
+            <!-- What is Ansible -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="fas fa-info-circle me-2"></i>What is Ansible?
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <div class="theory-icon">
+                                <i class="fas fa-cogs"></i>
+                            </div>
+                        </div>
+                        <p>Ansible is an open-source automation tool that simplifies configuration management, application deployment, and task automation. It uses a simple YAML-based language (Ansible Playbooks) that allows you to describe your automation jobs in a way that approaches plain English.</p>
+                        
+                        <h5>Key Features:</h5>
+                        <ul class="feature-list">
+                            <li><strong>Agentless Architecture:</strong> No need to install agents on managed nodes</li>
+                            <li><strong>Idempotent:</strong> Running the same playbook multiple times produces the same result</li>
+                            <li><strong>Simple YAML Syntax:</strong> Easy to learn and write automation scripts</li>
+                            <li><strong>Extensible:</strong> Large collection of modules and plugins</li>
+                            <li><strong>Powerful & Flexible:</strong> Can manage complex multi-tier deployments</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ansible Architecture -->
+            <div class="col-md-6">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <i class="fas fa-sitemap me-2"></i>Ansible Architecture
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            <div class="theory-icon">
+                                <i class="fas fa-project-diagram"></i>
+                            </div>
+                        </div>
+                        <p>Ansible follows a simple architecture with the following components:</p>
+                        
+                        <h6><strong>Control Node</strong></h6>
+                        <p>The machine where Ansible is installed and from which all tasks and playbooks are executed.</p>
+                        
+                        <h6><strong>Managed Nodes</strong></h6>
+                        <p>The network devices/servers you manage with Ansible. Also referred to as "hosts".</p>
+                        
+                        <h6><strong>Inventory</strong></h6>
+                        <p>A file that contains information about the managed nodes.</p>
+                        
+                        <h6><strong>Modules</strong></h6>
+                        <p>Units of code that Ansible executes. Each module has a specific use case.</p>
+                        
+                        <h6><strong>Playbooks</strong></h6>
+                        <p>Ordered lists of tasks saved in YAML format that execute against hosts defined in your inventory.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Installation Steps -->
+            <div class="col-md-12 mt-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-download me-2"></i>Ansible Installation Steps
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>On Ubuntu/Debian:</h5>
+                                <div class="code-block">
+# Update package index<br>
+sudo apt update<br><br>
+
+# Install software-properties-common<br>
+sudo apt install software-properties-common<br><br>
+
+# Add Ansible PPA<br>
+sudo add-apt-repository --yes --update ppa:ansible/ansible<br><br>
+
+# Install Ansible<br>
+sudo apt install ansible
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>On CentOS/RHEL:</h5>
+                                <div class="code-block">
+# Install EPEL repository<br>
+sudo dnf install epel-release<br><br>
+
+# Install Ansible<br>
+sudo dnf install ansible<br><br>
+
+# Or using yum on older versions<br>
+sudo yum install epel-release<br>
+sudo yum install ansible
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <h5>Using PIP (Any OS):</h5>
+                                <div class="code-block">
+# Install Python and PIP if not available<br>
+sudo apt install python3 python3-pip<br><br>
+
+# Install Ansible via PIP<br>
+pip3 install ansible
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>On macOS:</h5>
+                                <div class="code-block">
+# Using Homebrew<br>
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"<br><br>
+
+# Install Ansible<br>
+brew install ansible
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h5>Verification:</h5>
+                            <p>After installation, verify Ansible is working correctly:</p>
+                            <div class="code-block">
+# Check Ansible version<br>
+ansible --version<br><br>
+
+# Test connectivity to localhost<br>
+ansible localhost -m ping
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pros and Cons -->
+            <div class="col-md-12 mt-4">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-balance-scale me-2"></i>Ansible Pros and Cons
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 pros-cons">
+                                <div class="pros">
+                                    <h5><i class="fas fa-thumbs-up me-2 text-success"></i>Advantages</h5>
+                                    <ul>
+                                        <li><strong>Simple to Learn:</strong> YAML-based playbooks are easy to understand</li>
+                                        <li><strong>Agentless:</strong> No need to install software on managed nodes</li>
+                                        <li><strong>Powerful:</strong> Can manage complex IT workflows</li>
+                                        <li><strong>Flexible:</strong> Can orchestrate entire application environments</li>
+                                        <li><strong>Efficient:</strong> Manages multiple systems simultaneously</li>
+                                        <li><strong>Large Community:</strong> Extensive module library and community support</li>
+                                        <li><strong>Idempotent:</strong> Safe to run multiple times without side effects</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-6 pros-cons">
+                                <div class="cons">
+                                    <h5><i class="fas fa-thumbs-down me-2 text-danger"></i>Limitations</h5>
+                                    <ul>
+                                        <li><strong>Limited Windows Support:</strong> Better for Linux/Unix environments</li>
+                                        <li><strong>Performance:</strong> Can be slower than agent-based solutions for large infrastructures</li>
+                                        <li><strong>Learning Curve:</strong> Advanced features require experience</li>
+                                        <li><strong>Debugging:</strong> Can be challenging with complex playbooks</li>
+                                        <li><strong>State Management:</strong> Not as robust as some other configuration management tools</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Playbooks Section -->
+        <div class="row" id="playbooks">
+            <div class="col-md-12">
+                <h3 class="section-title">Security Hardening Playbooks</h3>
+                <p class="mb-4">Click on any playbook to download the Ansible configuration file.</p>
+                
+                <div class="file-path mb-4">
+                    <i class="fas fa-folder file-icon"></i>ansible_hardening_playbooks/
+                </div>
+            </div>
+            
+            <!-- Playbook Cards -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fab fa-linux me-2"></i>Linux General</span>
+                        <span class="badge bg-success">Verified</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="platform-icon">
+                            <i class="fab fa-linux"></i>
+                        </div>
+                        <h5 class="card-title">Linux General Hardening</h5>
+                        <p class="card-text">General Linux security hardening for all distributions using DevSec standards.</p>
+                        <div class="file-path text-start">
+                            <i class="far fa-file-code file-icon"></i>linux_general_hardening.yml
+                        </div>
+                        <a href="#" class="btn btn-download w-100" data-file="linux_general_hardening.yml">
+                            <i class="fas fa-download me-2"></i>Download Playbook
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fab fa-windows me-2"></i>Windows Server</span>
+                        <span class="badge bg-success">Verified</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="platform-icon">
+                            <i class="fab fa-windows"></i>
+                        </div>
+                        <h5 class="card-title">Windows Server Hardening</h5>
+                        <p class="card-text">Windows Server security policies and hardening with automated updates.</p>
+                        <div class="file-path text-start">
+                            <i class="far fa-file-code file-icon"></i>windows_server_hardening.yml
+                        </div>
+                        <a href="#" class="btn btn-download w-100" data-file="windows_server_hardening.yml">
+                            <i class="fas fa-download me-2"></i>Download Playbook
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fab fa-ubuntu me-2"></i>Ubuntu</span>
+                        <span class="badge bg-success">Verified</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="platform-icon">
+                            <i class="fab fa-ubuntu"></i>
+                        </div>
+                        <h5 class="card-title">Ubuntu Hardening</h5>
+                        <p class="card-text">Ubuntu-specific security hardening with unattended security updates.</p>
+                        <div class="file-path text-start">
+                            <i class="far fa-file-code file-icon"></i>ubuntu_hardening.yml
+                        </div>
+                        <a href="#" class="btn btn-download w-100" data-file="ubuntu_hardening.yml">
+                            <i class="fas fa-download me-2"></i>Download Playbook
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fab fa-apple me-2"></i>macOS</span>
+                        <span class="badge bg-warning">Community</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="platform-icon">
+                            <i class="fab fa-apple"></i>
+                        </div>
+                        <h5 class="card-title">macOS Hardening</h5>
+                        <p class="card-text">macOS security configuration and hardening for workstations.</p>
+                        <div class="file-path text-start">
+                            <i class="far fa-file-code file-icon"></i>macos_hardening.yml
+                        </div>
+                        <a href="#" class="btn btn-download w-100" data-file="macos_hardening.yml">
+                            <i class="fas fa-download me-2"></i>Download Playbook
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fab fa-redhat me-2"></i>CentOS/RHEL</span>
+                        <span class="badge bg-success">Verified</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="platform-icon">
+                            <i class="fab fa-redhat"></i>
+                        </div>
+                        <h5 class="card-title">CentOS/RHEL Hardening</h5>
+                        <p class="card-text">CentOS and Red Hat Enterprise Linux security with firewalld configuration.</p>
+                        <div class="file-path text-start">
+                            <i class="far fa-file-code file-icon"></i>centos_rhel_hardening.yml
+                        </div>
+                        <a href="#" class="btn btn-download w-100" data-file="centos_rhel_hardening.yml">
+                            <i class="fas fa-download me-2"></i>Download Playbook
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-fire me-2"></i>Palo Alto</span>
+                        <span class="badge bg-success">Verified</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="platform-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <h5 class="card-title">Palo Alto Firewall</h5>
+                        <p class="card-text">Palo Alto Networks firewall configuration with security policies.</p>
+                        <div class="file-path text-start">
+                            <i class="far fa-file-code file-icon"></i>palo_alto_firewall.yml
+                        </div>
+                        <a href="#" class="btn btn-download w-100" data-file="palo_alto_firewall.yml">
+                            <i class="fas fa-download me-2"></i>Download Playbook
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fab fa-suse me-2"></i>SUSE Linux</span>
+                        <span class="badge bg-success">Verified</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="platform-icon">
+                            <i class="fab fa-suse"></i>
+                        </div>
+                        <h5 class="card-title">SUSE Linux Hardening</h5>
+                        <p class="card-text">SUSE Linux Enterprise and openSUSE security with AppArmor.</p>
+                        <div class="file-path text-start">
+                            <i class="far fa-file-code file-icon"></i>suse_hardening.yml
+                        </div>
+                        <a href="#" class="btn btn-download w-100" data-file="suse_hardening.yml">
+                            <i class="fas fa-download me-2"></i>Download Playbook
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-network-wired me-2"></i>Fortinet</span>
+                        <span class="badge bg-success">Verified</span>
+                    </div>
+                    <div class="card-body text-center">
+                        <div class="platform-icon">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <h5 class="card-title">Fortinet Firewall</h5>
+                        <p class="card-text">Fortinet FortiGate firewall security configuration with policies.</p>
+                        <div class="file-path text-start">
+                            <i class="far fa-file-code file-icon"></i>fortinet_firewall.yml
+                        </div>
+                        <a href="#" class="btn btn-download w-100" data-file="fortinet_firewall.yml">
+                            <i class="fas fa-download me-2"></i>Download Playbook
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentation Section -->
+        <div class="row mt-5" id="documentation">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-book me-2"></i>Documentation & Resources
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Official Documentation</h5>
+                                <ul>
+                                    <li><a href="https://docs.ansible.com/" target="_blank">Ansible Official Documentation</a></li>
+                                    <li><a href="https://docs.ansible.com/ansible/latest/installation_guide/index.html" target="_blank">Installation Guide</a></li>
+                                    <li><a href="https://docs.ansible.com/ansible/latest/user_guide/playbooks.html" target="_blank">Playbook Guide</a></li>
+                                    <li><a href="https://galaxy.ansible.com/" target="_blank">Ansible Galaxy (Community Roles)</a></li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Learning Resources</h5>
+                                <ul>
+                                    <li><a href="https://www.ansible.com/resources/get-started" target="_blank">Ansible Getting Started</a></li>
+                                    <li><a href="https://www.redhat.com/en/services/training/do007-ansible-essentials-simplicity-automation-technical-overview" target="_blank">Red Hat Ansible Training</a></li>
+                                    <li><a href="https://github.com/ansible/ansible-examples" target="_blank">Ansible Examples Repository</a></li>
+                                    <li><a href="https://www.ansible.com/resources/webinars-training" target="_blank">Webinars & Training</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Ansible Security Hardening Portal</h5>
+                    <p>Production-ready playbooks for securing your infrastructure</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p>&copy; 2023 Security Operations Center</p>
+                    <p>All playbooks follow DevSec hardening standards</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Ansible playbook content for download
+        const playbookContent = {
+            'linux_general_hardening.yml': `---
+- name: "Apply general hardening to all Linux hosts"
+  hosts: linux_servers
+  become: true
+  vars:
+    os_hardening_sysctl_kernel_modules: 
+      - cramfs
+      - freevxfs
+      - jffs2
+      - hfs
+      - hfsplus
+      - squashfs
+      - udf
+      - vfat
+  collections:
+    - devsec.hardening
+  roles:
+    - os_hardening
+    - ssh_hardening
+  tasks:
+    - name: Ensure Linux packages are up-to-date
+      when: ansible_pkg_mgr in ['apt','dnf','yum','zypper']
+      block:
+        - name: Update package cache (APT)
+          apt:
+            update_cache: true
+          when: ansible_pkg_mgr == 'apt'
+        - name: Perform dist-upgrade (APT)
+          apt:
+            upgrade: dist
+          when: ansible_pkg_mgr == 'apt'
+        - name: Update all packages (DNF/YUM)
+          dnf:
+            name: '*'
+            state: latest
+            update_only: true
+          when: ansible_pkg_mgr == 'dnf'`,
+
+            'windows_server_hardening.yml': `---
+- name: "Harden Windows Servers"
+  hosts: windows_servers
+  gather_facts: yes
+  vars:
+    win_temp_path: 'C:\\\\Windows\\\\Temp'
+  tasks:
+    - name: Install all critical and security updates
+      ansible.windows.win_updates:
+        category_names: ['CriticalUpdates','SecurityUpdates']
+        reboot: yes
+    - name: Disable SMBv1 (legacy and insecure)
+      ansible.windows.win_feature:
+        name: FS-SMB1
+        state: absent
+      ignore_errors: yes
+    - name: Disable Telnet service (if present)
+      ansible.windows.win_service:
+        name: Telnet
+        start_mode: Disabled
+        state: stopped
+      ignore_errors: yes
+  roles:
+    - name: dev-sec.windows-hardening`,
+
+            'ubuntu_hardening.yml': `---
+- name: "Harden Ubuntu servers"
+  hosts: ubuntu_servers
+  become: true
+  vars:
+    unattended_upgrades: true
+  collections:
+    - devsec.hardening
+  tasks:
+    - name: Update APT cache and upgrade packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+    - name: Install Unattended Upgrades for security updates
+      apt:
+        name: unattended-upgrades
+        state: present
+    - name: Enable unattended upgrades
+      ansible.builtin.lineinfile:
+        path: /etc/apt/apt.conf.d/20auto-upgrades
+        regexp: '^APT::Periodic::Update-Package-Lists'
+        line: 'APT::Periodic::Update-Package-Lists "1";'
+  roles:
+    - os_hardening
+    - ssh_hardening`,
+
+            'macos_hardening.yml': `---
+- name: "Harden macOS workstations"
+  hosts: macos_hosts
+  remote_user: "{{ ansible_user | default('yourmacuser') }}"
+  become: true
+  vars:
+    ansible_become_method: sudo
+  tasks:
+    - name: Ensure system software is up-to-date
+      shell: softwareupdate -i -a
+      register: sw_update
+    - name: Restart if updates were installed
+      ansible.builtin.reboot:
+      when: sw_update.stdout is search("Installed")
+  roles:
+    - juju4.harden-darwin`,
+
+            'centos_rhel_hardening.yml': `---
+- name: "Harden CentOS/RHEL servers"
+  hosts: centos_rhel_servers
+  become: true
+  vars:
+    use_firewalld: true
+  collections:
+    - devsec.hardening
+  tasks:
+    - name: Update all packages
+      yum:
+        name: '*'
+        state: latest
+      when: ansible_pkg_mgr in ['yum','dnf']
+    - name: Install EPEL repository (if needed)
+      yum:
+        name: epel-release
+        state: present
+      when: ansible_distribution in ['CentOS','RedHat']
+    - name: Ensure firewalld is running
+      service:
+        name: firewalld
+        state: started
+        enabled: true
+      when: use_firewalld
+  roles:
+    - os_hardening
+    - ssh_hardening`,
+
+            'palo_alto_firewall.yml': `---
+- name: "Configure Palo Alto Firewall policies"
+  hosts: paloalto_firewalls
+  connection: local
+  gather_facts: false
+  collections:
+    - paloaltonetworks.panos
+  vars:
+    provider:
+      ip_address: "{{ inventory_hostname }}"
+      username: "{{ ansible_user }}"
+      password: "{{ ansible_password }}"
+      api_key: "{{ palo_api_key | default(omit) }}"
+  tasks:
+    - name: Add security rule to deny all but SSH/HTTP (example)
+      paloaltonetworks.panos.panos_security_rule:
+        provider: "{{ provider }}"
+        rule_name: 'Block-All-Except-SSH-HTTP'
+        description: 'Default deny rule (only SSH/HTTP allowed above)'
+        source_zone: ['untrust']
+        destination_zone: ['trust']
+        source_ip: ['any']
+        destination_ip: ['any']
+        application: ['any']
+        service: ['application-default']
+        action: deny
+        commit: yes`,
+
+            'suse_hardening.yml': `---
+- name: "Harden SUSE Linux servers"
+  hosts: suse_servers
+  become: true
+  collections:
+    - devsec.hardening
+  tasks:
+    - name: Refresh zypper repos and update
+      zypper:
+        name: '*'
+        state: latest
+        update_cache: yes
+    - name: Ensure AppArmor service is enabled
+      service:
+        name: apparmor
+        state: started
+        enabled: true
+      ignore_errors: true
+  roles:
+    - os_hardening
+    - ssh_hardening`,
+
+            'fortinet_firewall.yml': `---
+- name: "Configure FortiGate Firewall policies"
+  hosts: fortigates
+  connection: httpapi
+  collections:
+    - fortinet.fortios
+  vars:
+    vdom: "root"
+    ansible_httpapi_validate_certs: false
+    ansible_httpapi_use_ssl: true
+  tasks:
+    - name: Define internal web server address object
+      fortinet.fortios.fortios_firewall_address:
+        vdom: "{{ vdom }}"
+        state: present
+        firewall_address:
+          name: 'Web-Server'
+          type: 'ipmask'
+          subnet: '10.0.0.100/32'
+    - name: Create IPv4 policy: Allow HTTP and NAT to Web-Server
+      fortinet.fortios.fortios_firewall_policy:
+        vdom: "{{ vdom }}"
+        state: present
+        firewall_policy:
+          name: 'Allow-HTTP-Inbound'
+          srcintf: 'port1'
+          dstintf: 'port2'
+          srcaddr: ['all']
+          dstaddr: ['Web-Server']
+          action: 'accept'
+          schedule: 'always'
+          service: ['HTTP']
+          logtraffic: 'all'
+          nat: 'enable'
+          natip: '203.0.113.10'`
+        };
+
+        // Handle download buttons
+        document.querySelectorAll('.btn-download').forEach(button => {
+            button.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                const filename = button.dataset.file;
+                const content = playbookContent[filename];
+                
+                if (content) {
+                    // Create a Blob with the content
+                    const blob = new Blob([content], { type: 'text/yaml' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    // Create a temporary anchor element to trigger download
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    
+                    // Clean up
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }, 100);
+                }
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

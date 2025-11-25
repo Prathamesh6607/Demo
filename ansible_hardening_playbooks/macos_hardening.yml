@@ -1,0 +1,16 @@
+---
+- name: "Harden macOS workstations"
+  hosts: macos_hosts
+  remote_user: "{{ ansible_user | default('yourmacuser') }}"
+  become: true
+  vars:
+    ansible_become_method: sudo
+  tasks:
+    - name: Ensure system software is up-to-date
+      shell: softwareupdate -i -a
+      register: sw_update
+    - name: Restart if updates were installed
+      ansible.builtin.reboot:
+      when: sw_update.stdout is search("Installed")
+  roles:
+    - juju4.harden-darwin

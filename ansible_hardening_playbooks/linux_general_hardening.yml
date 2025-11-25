@@ -1,0 +1,47 @@
+---
+- name: "Apply general hardening to all Linux hosts"
+  hosts: linux_servers
+  become: true
+  vars:
+    os_hardening_sysctl_kernel_modules: 
+      - cramfs
+      - freevxfs
+      - jffs2
+      - hfs
+      - hfsplus
+      - squashfs
+      - udf
+      - vfat
+  collections:
+    - devsec.hardening
+  roles:
+    - os_hardening
+    - ssh_hardening
+  tasks:
+    - name: Ensure Linux packages are up-to-date
+      when: ansible_pkg_mgr in ['apt','dnf','yum','zypper']
+      block:
+        - name: Update package cache (APT)
+          apt:
+            update_cache: true
+          when: ansible_pkg_mgr == 'apt'
+        - name: Perform dist-upgrade (APT)
+          apt:
+            upgrade: dist
+          when: ansible_pkg_mgr == 'apt'
+        - name: Update all packages (DNF/YUM)
+          dnf:
+            name: '*'
+            state: latest
+            update_only: true
+          when: ansible_pkg_mgr == 'dnf'
+        - name: Update all packages (YUM)
+          yum:
+            name: '*'
+            state: latest
+          when: ansible_pkg_mgr == 'yum'
+        - name: Refresh and update (Zypper)
+          zypper:
+            name: '*'
+            state: latest
+          when: ansible_pkg_mgr == 'zypper'
