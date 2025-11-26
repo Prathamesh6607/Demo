@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}404 Not Found - IoT NIST Monitor{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card shadow-sm border-0">
+      <div class="card-body text-center py-5">
+        <h1 class="display-6 mb-3"><i class="fas fa-exclamation-triangle text-warning me-2"></i>404 Not Found</h1>
+        <p class="lead">The page you are looking for does not exist or has been moved.</p>
+        <hr>
+        <p class="mb-4 small text-muted">If you entered the URL manually please check your spelling and try again.</p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+          <a href="{{ url_for('index') }}" class="btn btn-primary"><i class="fas fa-home me-1"></i>Dashboard</a>
+          <a href="{{ url_for('identify') }}" class="btn btn-outline-secondary"><i class="fas fa-search me-1"></i>Identify</a>
+          <a href="{{ url_for('report') }}" class="btn btn-outline-dark"><i class="fas fa-chart-pie me-1"></i>Report</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
