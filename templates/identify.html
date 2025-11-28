@@ -10,6 +10,12 @@
     body { background:#f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     .page-header { background:linear-gradient(135deg,#2c3e50,#3498db); color:#fff; padding:1.25rem 1.75rem; border-radius:8px; margin-bottom:1.5rem; }
     .scan-card .progress { height:14px; }
+    .scan-card .card-body { display: flex; flex-direction: column; align-items: stretch; }
+    .scan-card .btn { align-self: flex-start; }
+    #bluetoothDeviceList { min-height: 2.5em; }
+    @media (max-width: 767px) {
+      .scan-card .card-body { align-items: stretch; }
+    }
     .badge-small { font-size:0.65rem; }
     .table thead th { white-space:nowrap; }
   </style>
@@ -17,24 +23,24 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-3">
     <div class="container-fluid">
-      <a class="navbar-brand" href="http://localhost:3000/identify"><i class="fas fa-shield-alt me-2"></i>IoT NIST Monitor</a>
+      <a class="navbar-brand" href="http://localhost:5001/identify"><i class="fas fa-shield-alt me-2"></i>IoT NIST Monitor</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="mainNav">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item"><a class="nav-link" href="http://localhost:3000/dashboard">Dashboard</a></li>
-          <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:3000/identify">Identify</a></li>
-          <li class="nav-item"><a class="nav-link" href="http://localhost:3000/protect">Protect</a></li>
-          <li class="nav-item"><a class="nav-link" href="http://localhost:3000/detect">Detect</a></li>
-          <li class="nav-item"><a class="nav-link" href="http://localhost:3000/respond">Respond</a></li>
-          <li class="nav-item"><a class="nav-link" href="http://localhost:3000/recover">Recover</a></li>
+          <li class="nav-item"><a class="nav-link" href="/">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link active" aria-current="page" href="http://localhost:5001/identify">Identify</a></li>
+          <li class="nav-item"><a class="nav-link" href="http://localhost:5001/protect">Protect</a></li>
+          <li class="nav-item"><a class="nav-link" href="http://localhost:5001/detect">Detect</a></li>
+          <li class="nav-item"><a class="nav-link" href="http://localhost:5001/respond">Respond</a></li>
+          <li class="nav-item"><a class="nav-link" href="http://localhost:5001/recover">Recover</a></li>
           <li class="nav-item position-relative">
-            <a class="nav-link" href="http://localhost:3000/devicehive">DeviceHive
+            <a class="nav-link" href="http://localhost:5001/devicehive">DeviceHive
               <span id="deviceHiveUnread" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">3</span>
             </a>
           </li>
-          <li class="nav-item"><a class="nav-link" href="http://localhost:3000/report">Report</a></li>
+          <li class="nav-item"><a class="nav-link" href="http://localhost:5001/report">Report</a></li>
         </ul>
       </div>
     </div>
@@ -63,7 +69,7 @@
             <button class="btn btn-primary btn-sm mb-2" onclick="startBluetoothScan()"><i class="fas fa-search me-1"></i>Scan Bluetooth</button>
             <div class="progress mb-2"><div id="btProgress" class="progress-bar bg-primary" style="width:0%">0%</div></div>
             <div id="btStatus" class="small text-muted">Idle</div>
-            <ul class="list-group list-group-flush mt-3" id="bluetoothDeviceList"><li class="list-group-item small text-muted">Waiting for scan...</li></ul>
+            <ul class="list-group list-group-flush mt-3" id="bluetoothDeviceList"></ul>
             <div id="bluetoothNewDevices" class="mt-3"></div>
           </div>
         </div>
@@ -100,13 +106,77 @@
   <script>
     const NODE_BASE = 'http://localhost:3000';
     async function fetchDevices(){
-      try{const r=await fetch(`${NODE_BASE}/api/devices`);if(!r.ok)throw new Error('fetch failed');return await r.json();}catch(e){console.error('Device fetch failed', e);setHealth(false);return {wifi:[],bluetooth:[],bluetooth_new:[],nmap:[],open_ports:0};}}
+      // Fetch network devices as before
+      let networkData = {wifi:[],bluetooth:[],bluetooth_new:[],nmap:[],open_ports:0};
+      try{
+        const r=await fetch(`${NODE_BASE}/api/devices`);
+        if(r.ok) networkData = await r.json();
+      }catch(e){console.error('Device fetch failed', e);setHealth(false);}
+      // Fetch Bluetooth devices from static cache endpoint
+      try{
+        const br=await fetch('/api/bluetooth-devices');
+        if(br.ok){
+          const bdata=await br.json();
+          networkData.bluetooth = bdata.devices || [];
+        }
+      }catch(e){console.error('Bluetooth fetch failed', e);}
+      return networkData;
+    }
     function renderDeviceList(list,id,empty){const el=document.getElementById(id);if(!el)return; if(!list||!list.length){el.innerHTML=`<li class='list-group-item small text-muted'>${empty}</li>`;return;} el.innerHTML=list.map(d=>`<li class='list-group-item d-flex justify-content-between align-items-center small'><span><i class='${d.type==='WiFi Network'?'fas fa-wifi text-info':'fab fa-bluetooth-b text-primary'} me-1'></i>${d.name||'Unknown'}</span><span class='badge bg-light text-dark border'>${d.status||'Unknown'}</span></li>`).join('');}
     function renderBluetoothNew(devs){const c=document.getElementById('bluetoothNewDevices');if(!c)return; if(!devs||!devs.length){c.innerHTML='';return;} c.innerHTML=`<div class='card border'><div class='card-header py-1 small bg-light'>New Devices</div><ul class='list-group list-group-flush small'>${devs.map(d=>`<li class='list-group-item'><i class='fas fa-mobile-alt me-1'></i>${d.name}</li>`).join('')}</ul></div>`;}
     function renderIotTable(data){const body=document.getElementById('iotDeviceTable');let rows=[];const nmap=data.nmap||[];const wifi=data.wifi||[];const bt=data.bluetooth||[];nmap.forEach(h=>{rows.push(`<tr class='device-row'><td>${h.ip}</td><td>${h.mac||'—'}</td><td>${h.ip||'—'}</td><td>${h.vendor||'Unknown'}</td><td>Network</td><td>${h.status||'Alive'}</td><td>${h.open_ports&&h.open_ports.length?h.open_ports.join(', '):'—'}</td></tr>`);});wifi.forEach(w=>{rows.push(`<tr class='device-row'><td>${w.name}</td><td>—</td><td>—</td><td>—</td><td>${w.type}</td><td>${w.status}</td><td>—</td></tr>`);});bt.forEach(b=>{rows.push(`<tr class='device-row'><td>${b.name}</td><td>—</td><td>—</td><td>—</td><td>${b.type}</td><td>${b.status}</td><td>—</td></tr>`);});if(!rows.length){body.innerHTML=`<tr><td colspan='7' class='text-center small text-muted py-4'>No devices yet. Run a scan.</td></tr>`;} else {body.innerHTML=rows.join('');} document.getElementById('deviceCount').textContent=rows.length;}
+        function renderIotTable(data){
+          const body=document.getElementById('iotDeviceTable');
+          let rows=[];
+          const nmap=data.nmap||[];
+          const wifi=data.wifi||[];
+          const bt=data.bluetooth||[];
+          // Merge nmap and bluetooth, deduplicate by MAC or address
+          let seen = new Set();
+          nmap.forEach(h=>{
+            let mac = h.mac||h.mac_address||h.address||h.ip;
+            seen.add(mac);
+            rows.push(`<tr class='device-row'><td>${h.ip||h.name||'—'}</td><td>${h.mac||'—'}</td><td>${h.ip||'—'}</td><td>${h.vendor||'Unknown'}</td><td>Network</td><td>${h.status||'Alive'}</td><td>${h.open_ports&&h.open_ports.length?h.open_ports.join(', '):'—'}</td></tr>`);
+          });
+          wifi.forEach(w=>{
+            rows.push(`<tr class='device-row'><td>${w.name}</td><td>—</td><td>—</td><td>—</td><td>${w.type}</td><td>${w.status}</td><td>—</td></tr>`);
+          });
+          bt.forEach(b=>{
+            let mac = b.mac||b.mac_address||b.address;
+            if(!seen.has(mac)){
+              seen.add(mac);
+              rows.push(`<tr class='device-row'><td>${b.name||'Unknown'}</td><td>${b.mac||b.mac_address||b.address||'—'}</td><td>${b.address||'—'}</td><td>—</td><td>Bluetooth</td><td>—</td><td>—</td></tr>`);
+            }
+          });
+          if(!rows.length){
+            body.innerHTML=`<tr><td colspan='7' class='text-center small text-muted py-4'>No devices yet. Run a scan.</td></tr>`;
+          } else {
+            body.innerHTML=rows.join('');
+          }
+          document.getElementById('deviceCount').textContent=rows.length;
+        }
     async function updateDashboard(){const data=await fetchDevices();renderDeviceList(data.wifi,'wifiDeviceList','No WiFi networks');renderDeviceList(data.bluetooth,'bluetoothDeviceList','No Bluetooth devices');renderBluetoothNew(data.bluetooth_new);renderIotTable(data);}    
     async function startNmapScan(){const s=document.getElementById('wifiStatus');const pb=document.getElementById('wifiProgress');s.textContent='Running nmap...';pb.style.width='10%';pb.textContent='10%';try{const r=await fetch(`${NODE_BASE}/api/nmap`);if(r.ok){pb.style.width='100%';pb.textContent='100%';s.textContent='Scan complete';updateDashboard();}else{pb.style.width='0%';pb.textContent='0%';s.textContent='Scan failed';}}catch(e){pb.style.width='0%';pb.textContent='0%';s.textContent='Error';}}
-    async function startBluetoothScan(){const s=document.getElementById('btStatus');const pb=document.getElementById('btProgress');s.textContent='Scanning...';pb.style.width='20%';pb.textContent='20%';try{const r=await fetch(`${NODE_BASE}/api/bluetooth`);if(r.ok){pb.style.width='100%';pb.textContent='100%';s.textContent='Discovery complete';updateDashboard();}else{pb.style.width='0%';pb.textContent='0%';s.textContent='Scan failed';}}catch(e){pb.style.width='0%';pb.textContent='0%';s.textContent='Error';}}
+    async function startBluetoothScan(){
+      const s=document.getElementById('btStatus');
+      const pb=document.getElementById('btProgress');
+      s.textContent='Scanning...';
+      pb.style.width='20%';pb.textContent='20%';
+      try{
+        // Call new API endpoint for live Bluetooth scan
+        const r=await fetch('/api/bluetooth-devices?scan_duration=10');
+        if(r.ok){
+          const data=await r.json();
+          pb.style.width='100%';pb.textContent='100%';
+          s.textContent=`Discovery complete (${data.devices.length} found)`;
+          renderDeviceList(data.devices,'bluetoothDeviceList','No Bluetooth devices');
+        }else{
+          pb.style.width='0%';pb.textContent='0%';s.textContent='Scan failed';
+        }
+      }catch(e){
+        pb.style.width='0%';pb.textContent='0%';s.textContent='Error';
+      }
+    }
     function setHealth(ok){
       let badge=document.getElementById('apiHealth');
       if(!badge){const navBrand=document.querySelector('.navbar-brand');if(navBrand){badge=document.createElement('span');badge.id='apiHealth';badge.className='badge ms-2';navBrand.appendChild(badge);} }

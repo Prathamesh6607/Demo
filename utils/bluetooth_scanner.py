@@ -1,65 +1,41 @@
-import logging
 from typing import List, Dict, Any
 from datetime import datetime
-
-logger = logging.getLogger(__name__)
 
 class BluetoothScanner:
     def __init__(self):
         self.discovered_devices = []
         self.is_scanning = False
-    
+
     def scan_bluetooth(self, duration: int = 30) -> List[Dict[str, Any]]:
-        """Simulate Bluetooth device scanning"""
+        """Scan for classic Bluetooth devices using pybluez, returning address and name."""
+        self.is_scanning = True
+        self.discovered_devices = []
         try:
-            self.is_scanning = True
-            self.discovered_devices = []
-            
-            # Simulate Bluetooth devices (in real implementation, this would use pybluez or similar)
-            simulated_devices = [
-                {
-                    "name": "Smart Thermostat",
-                    "mac_address": "AA:BB:CC:DD:EE:01",
-                    "device_type": "sensor",
-                    "rssi": -65,
-                    "services": ["temperature", "humidity"],
+            import bluetooth
+            print("Looking for bluetooth devices ..........")
+            devices = bluetooth.discover_devices(duration=duration, lookup_names=True)
+            for addr, name in devices:
+                print("Address :", addr)
+                print("Name :", name)
+                self.discovered_devices.append({
+                    "name": name or "Unknown",
+                    "mac_address": addr,
+                    "device_type": "classic",
+                    "rssi": None,
+                    "services": [],
                     "last_seen": datetime.now().isoformat()
-                },
-                {
-                    "name": "IoT Camera",
-                    "mac_address": "AA:BB:CC:DD:EE:02", 
-                    "device_type": "camera",
-                    "rssi": -72,
-                    "services": ["video", "audio"],
-                    "last_seen": datetime.now().isoformat()
-                },
-                {
-                    "name": "Smart Lock",
-                    "mac_address": "AA:BB:CC:DD:EE:03",
-                    "device_type": "lock", 
-                    "rssi": -58,
-                    "services": ["access_control"],
-                    "last_seen": datetime.now().isoformat()
-                }
-            ]
-            
-            self.discovered_devices = simulated_devices
-            self.is_scanning = False
-            
-            return simulated_devices
-            
+                })
         except Exception as e:
-            logger.error(f"Bluetooth scan failed: {e}")
-            return {"error": f"Bluetooth scan failed: {str(e)}"}
-    
+            print(f"Classic Bluetooth scan failed: {e}")
+        self.is_scanning = False
+        return self.discovered_devices
+
     def get_scan_progress(self) -> Dict[str, Any]:
-        """Get current scan progress"""
         return {
             "status": "scanning" if self.is_scanning else "completed",
             "current_operation": "Scanning for Bluetooth devices",
             "devices_found": len(self.discovered_devices)
         }
-    
+
     def stop_scan(self):
-        """Stop Bluetooth scanning"""
         self.is_scanning = False

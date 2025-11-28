@@ -6,6 +6,7 @@ import json
 from datetime import datetime, timedelta
 import threading
 import time
+import time as _time
 import math
 import subprocess
 import signal
@@ -3082,4 +3083,34 @@ if __name__ == '__main__':
     print("=" * 60)
     
     # Run the application on port 5001 to avoid socket permission issues
+
+# Bluetooth scan cache
+_bluetooth_scan_cache = {
+    'devices': [],
+    'timestamp': 0
+}
+
+@app.route('/api/bluetooth-devices', methods=['GET'])
+def api_bluetooth_devices():
+    """API endpoint to scan and return Bluetooth devices (cached for 60 seconds)"""
+    try:
+        if not BLUETOOTH_AVAILABLE:
+            return jsonify({'success': False, 'error': 'Bluetooth scanning not available', 'devices': []}), 503
+        now = _time.time()
+        cache_age = now - _bluetooth_scan_cache['timestamp']
+        if cache_age < 60 and _bluetooth_scan_cache['devices']:
+            # Serve cached result
+            return jsonify({'success': True, 'devices': _bluetooth_scan_cache['devices'], 'cached': True, 'age': int(cache_age)})
+        # Perform new scan
+        scan_duration = int(request.args.get('scan_duration', 10))
+        devices = bluetooth_scanner.scan_bluetooth(duration=scan_duration)
+        save_bluetooth_devices(devices)
+        _bluetooth_scan_cache['devices'] = devices
+        _bluetooth_scan_cache['timestamp'] = now
+        return jsonify({'success': True, 'devices': devices, 'cached': False, 'age': 0})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e), 'devices': []}), 500
+
+
+if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001, threaded=True)
